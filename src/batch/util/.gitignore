@@ -1,7 +1,0 @@
-*
-!*.c
-!*.cpp
-!*.h
-!*.hpp
-!.gitignore
-!*.am

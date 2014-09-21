@@ -1,7 +1,0 @@
-<xs:complexType name="rsregression">
-    <xs:complexContent>
-        <xs:extension base="rstask">
-            <!-- no further extensions needed for rsregression -->
-        </xs:extension>
-    </xs:complexContent>
-</xs:complexType>

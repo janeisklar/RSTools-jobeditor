@@ -1,9 +1,0 @@
-#include <omp.h>
-#include "correlation.h"
-#include "filter.h"
-#include "geom.h"
-#include "linalg.h"
-#include "multivar_analysis.h"
-#include "regression.h"
-#include "stats.h"
-#include "utils.h"

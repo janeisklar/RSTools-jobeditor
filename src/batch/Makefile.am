@@ -1,25 +1,11 @@
 include $(top_srcdir)/m4/autotroll.mk
 
-SUBDIRS = util plugins .
 AUTOMAKE_OPTIONS = subdir-objects
 
-AM_CFLAGS = -DDATA_PATH=\"$(datadir)\"
-AM_CPPFLAGS = -DDATA_PATH=\"$(datadir)\"
+AM_CFLAGS = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src
 
-rslibraries=                     \
-	../utils/librsutils.la       \
-	../maths/librsmathutils.la   \
-	../nifti/librsniftiutils.la  \
-	util/librsbatchutils.la
-
-bin_PROGRAMS = rsbatch rsjobeditor
-
-LDADD=$(rslibraries)
-
-rsbatch_SOURCES = rsbatch_common.cpp rsbatch_ui.cpp rsbatch.cpp
-
-jobdir = $(datadir)/$(PACKAGE)/jobs
-job_DATA = ../../share/jobs/job.xsd ../../share/jobs/dmn.job
+bin_PROGRAMS = rsjobeditor
 
 rsjobeditor_SOURCES  = \
  jobeditor/ui/jobeditor.ui \
@@ -67,7 +53,6 @@ install-exec-hook:
 	touch $(DESTDIR)$(bindir)/RSJobEditor.app/Contents/MacOS/rsjobeditor
 	rm $(DESTDIR)$(bindir)/RSJobEditor.app/Contents/MacOS/rsjobeditor
 	ln -s $(DESTDIR)$(bindir)/rsjobeditor $(DESTDIR)$(bindir)/RSJobEditor.app/Contents/MacOS/rsjobeditor
-	
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(bindir)/RSJobEditor.app
