@@ -2,8 +2,8 @@ include $(top_srcdir)/m4/autotroll.mk
 
 AUTOMAKE_OPTIONS = subdir-objects
 
-AM_CFLAGS = -I$(top_srcdir)/src
-AM_CPPFLAGS = -I$(top_srcdir)/src
+AM_CFLAGS = -DDATA_PATH=\"$(datadir)\" -I$(top_srcdir)/src
+AM_CPPFLAGS = -DDATA_PATH=\"$(datadir)\" -I$(top_srcdir)/src
 
 bin_PROGRAMS = rsjobeditor
 

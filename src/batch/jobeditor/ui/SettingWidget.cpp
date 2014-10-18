@@ -76,6 +76,7 @@ void SettingWidget::createValueWidget()
                         } else if ( option->defaultValue != NULL ) {
                             w->setText(option->defaultValue);
                         }
+                        connect(w, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));
                         valueWidget = w;
                     } else { // create a QTextEdit field instead
                         QPlainTextEdit *w = new QPlainTextEdit();
@@ -88,6 +89,7 @@ void SettingWidget::createValueWidget()
                         int rowHeight = m.lineSpacing() ;
                         w->setFixedHeight(option->nLines * rowHeight) ;
                         w->setLineWrapMode(QPlainTextEdit::NoWrap);
+                        connect(w, SIGNAL(textChanged()), this, SLOT(textChanged()));
                         valueWidget = w;
                     }
                 } else { // if the allowed values are restricted display radio buttons instead
@@ -103,7 +105,7 @@ void SettingWidget::createValueWidget()
                         QRadioButton *b = new QRadioButton(QString("'")+QString(values[i]->name)+QString("'"));
                         QFont f("Arial", 12, QFont::Bold);
                         b->setFont(f);
-                        buttonGroup->addButton(b);
+                        buttonGroup->addButton(b, (int)i);
                         wLayout->addWidget(b);
                         
                         // set it to checked if it is the default or set value
@@ -127,6 +129,8 @@ void SettingWidget::createValueWidget()
                     }
                     w->setLayout(wLayout);
                     valueWidget = w;
+                    
+                    connect(buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(buttonClicked(int)));
                 }
             }
             break;
@@ -148,9 +152,75 @@ void SettingWidget::createValueWidget()
                     w->setCheckState(Qt::Unchecked);
                 }
                 valueWidget = w;
+                connect(w, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
             }
             break;
         default:
             throw std::invalid_argument("UI argument type unknown");
+    }
+}
+
+// Slot for QLineEdits
+void SettingWidget::textChanged(const QString &newValue)
+{
+    char *newValueCString = newValue.toLocal8Bit().data();
+    rsArgument* argument = task->getArgument(option->name);
+    
+    char *newV = (char*)rsMalloc(sizeof(char)*(strlen(newValueCString)+1));
+    sprintf(newV, "%s", newValueCString);
+    
+    if ( argument != NULL ) {
+        char *oldV = argument->value;
+        argument->value = newV;
+        rsFree(oldV);
+    } else {
+        argument = (rsArgument*)rsMalloc(sizeof(rsArgument));
+        
+        char *name = (char*)rsMalloc(sizeof(char)*(strlen(option->name)+1));
+        sprintf(name, "%s", option->name);
+        
+        argument->key = name;
+        argument->value = newV;
+        
+        task->addArgument(argument);
+    }
+}
+
+// Slot for QPlainTextEdit
+void SettingWidget::textChanged()
+{
+    const QString s = ((QPlainTextEdit*)valueWidget)->toPlainText();
+    textChanged(s);
+}
+
+// Slot for QButtonGroup
+void SettingWidget::buttonClicked(int id)
+{
+    rsUIOptionValue** values = option->allowedValues;
+    char *value = values[id]->name;
+    
+    textChanged(QString::fromLocal8Bit(value));
+}
+
+// Slot for QCheckBox
+void SettingWidget::stateChanged(int state)
+{
+    if ( state == Qt::Checked ) {
+        rsArgument* argument = task->getArgument(option->name);
+        if ( argument == NULL ) {
+            argument = (rsArgument*)rsMalloc(sizeof(rsArgument));
+            
+            argument->key = (char*)rsMalloc(sizeof(char)*(strlen(option->name)+1));
+            sprintf(argument->key, "%s", option->name);
+            argument->value = NULL;
+            
+            task->addArgument(argument);
+        }
+    } else {
+        rsArgument* argument = task->getArgument(option->name);
+        if ( argument != NULL ) {
+            task->removeArgument(option->name);
+            //rsFree(argument);
+        }
     }
 }

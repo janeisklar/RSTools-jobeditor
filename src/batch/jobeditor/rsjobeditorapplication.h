@@ -1,5 +1,5 @@
-#ifndef rstools_rsbatch_execution_timecourse_h
-#define rstools_rsbatch_execution_timecourse_h
+#ifndef rstools_rsbatch_jobeditor_rsjobeditorapplication_h
+#define rstools_rsbatch_jobeditor_rsjobeditorapplication_h
 
 #include <QApplication>
 #include <QWidget>
@@ -48,6 +48,7 @@ protected:
     QMenu *insertMenu;
     
     RSJob *currentJob;
+    char *currentJobPath;
 };
 
 #endif

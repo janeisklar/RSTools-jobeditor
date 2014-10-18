@@ -2,7 +2,9 @@
 #include "ui/ArgumentsModel.h"
 #include <QFileDialog>
 #include <QErrorMessage>
+#include <tr1/unordered_map>
 
+using namespace std;
 using namespace rstools::batch::util;
 
 void JobEditorWindow::createActions()
@@ -81,11 +83,43 @@ void JobEditorWindow::createInsertTaskMenuItems()
     QSignalMapper* signalMapper = new QSignalMapper(this);
     
     vector<const char*> tools = RSTool::getTools();
-    size_t i=0;
     
+    // acquire list of tool categories
+    vector<string> categories;
+    for (vector<const char*>::iterator it = tools.begin(); it != tools.end(); ++it) {
+
+        char* code   = (char*)*it;
+        rsToolRegistration* reg = RSTool::findRegistration(code);
+        string category = reg->category;
+        
+        if ( std::find(categories.begin(), categories.end(), category) == categories.end() ) {
+            categories.push_back(category);
+        }
+    }
+    std::sort(categories.begin(), categories.end());
+    
+    
+    // create submenus
+    typedef tr1::unordered_map<string, QMenu*> hashmap;
+    hashmap submenus;
+    
+    for (vector<string>::iterator it = categories.begin(); it != categories.end(); ++it) {
+
+        string category = (string)*it;
+        
+        if ( submenus.find(category) == submenus.end() ) {
+            QMenu* submenu = insertMenu->addMenu(category.c_str());
+            submenus[category] = submenu;
+        }
+    }
+    
+    // create insert actions
+    size_t i=0;
+    //std::sort(tools.begin(), tools.end());
     for (vector<const char*>::iterator it = tools.begin(); it != tools.end(); ++it) {
 
         const char* code   = (char*)*it;
+
         RSTask* task = RSTask::taskFactory(code);
         const char* name   = task->getName();
 
@@ -93,7 +127,10 @@ void JobEditorWindow::createInsertTaskMenuItems()
         connect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
         signalMapper->setMapping(action, i);
         
-        insertMenu->addAction(action);
+        rsToolRegistration* reg = RSTool::findRegistration(code);
+        string category = reg->category;
+        
+        submenus[category]->addAction(action);
         
         i++;
     }
@@ -125,6 +162,10 @@ void JobEditorWindow::open()
 
 void JobEditorWindow::openJob(char* jobFile)
 {
+    if (currentJobPath != NULL)
+        rsFree(currentJobPath);
+    currentJobPath = jobFile;
+    
     
     RSJobParser *parser = new RSJobParser(jobFile);
     parser->parse();
@@ -148,6 +189,41 @@ void JobEditorWindow::openJob(char* jobFile)
 
 void JobEditorWindow::save()
 {
+    if ( currentJob == NULL ) {
+        return;
+    }
+    
+    try {
+        QString fileName = QFileDialog::getSaveFileName(
+            this, 
+            tr("Save Job"),
+            currentJobPath,
+            tr("RSJob-file (*.job)")
+        );
+        
+        if ( fileName != NULL ) {
+            currentJobPath = fileName.toUtf8().data();
+                        
+            FILE *f = fopen(currentJobPath, "w");
+            
+            if ( f == NULL ) {
+                throw runtime_error("File could not be saved. Please ensure that the proper writing permissions are granted.");
+            }
+            
+            char *jobXml = currentJob->toXml();
+            
+            fprintf(f, "%s", jobXml);
+            fclose(f);
+        }
+    } catch (const exception& e) {
+    	QErrorMessage errorMessage(this);
+    	errorMessage.showMessage(e.what());
+    	errorMessage.exec();        
+    } catch (...) {
+    	QErrorMessage errorMessage(this);
+    	errorMessage.showMessage("Unknown error while opening the job file");
+    	errorMessage.exec();
+    }
 }
 
 void JobEditorWindow::insertNewTask(int taskIndex)
@@ -172,10 +248,12 @@ void JobEditorWindow::insertTask(RSTask* task)
     const QString title = QString(name);
     
     ui.pipelineWidget->addPage(widget, QIcon(), title);
+    
+    currentJob->addTask(task);
 }
 
 JobEditorWindow::JobEditorWindow(QMainWindow *parent) : QMainWindow(parent)
-{    
+{
     ui.setupUi(this);
     ui.pipelineWidget->removePage(0);
     
@@ -185,12 +263,14 @@ JobEditorWindow::JobEditorWindow(QMainWindow *parent) : QMainWindow(parent)
     } catch (const exception& e) {
     	QErrorMessage errorMessage;
     	errorMessage.showMessage(e.what());
-    	errorMessage.exec();        
+    	errorMessage.exec();
     } catch (...) {
     	QErrorMessage errorMessage;
-    	errorMessage.showMessage("Unknown error while intializing the application");
+        errorMessage.showMessage("Unknown error while intializing the application");
     	errorMessage.exec();
     }
+    currentJobPath = NULL;
+    currentJob = NULL;
 }
 
 JobEditorWindow::~JobEditorWindow()

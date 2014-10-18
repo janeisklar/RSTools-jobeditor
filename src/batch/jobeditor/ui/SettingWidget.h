@@ -24,6 +24,12 @@ protected:
     rsUIOption *option;
     QWidget *valueWidget;
     RSTask* task;
+    
+protected slots:
+    void textChanged();
+    void textChanged(const QString &newValue);
+    void buttonClicked(int id);
+    void stateChanged(int state);
 };
 
 #endif
