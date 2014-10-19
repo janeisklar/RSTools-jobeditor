@@ -70,6 +70,7 @@ void SettingWidget::createValueWidget()
                 if ( option->allowedValues == NULL ) {
                     if ( option->nLines < 2 ) {
                         QLineEdit *w = new QLineEdit();
+                        valueWidget = w;
                         w->setPlaceholderText(option->cli_arg_description);
                         connect(w, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));
                         if ( argument != NULL ) {
@@ -77,9 +78,9 @@ void SettingWidget::createValueWidget()
                         } else if ( option->defaultValue != NULL ) {
                             w->setText(option->defaultValue);
                         }
-                        valueWidget = w;
                     } else { // create a QTextEdit field instead
                         QPlainTextEdit *w = new QPlainTextEdit();
+                        valueWidget = w;
                         connect(w, SIGNAL(textChanged()), this, SLOT(textChanged()));
                         if ( argument != NULL ) {
                             w->setPlainText(argument->value);
@@ -90,13 +91,13 @@ void SettingWidget::createValueWidget()
                         int rowHeight = m.lineSpacing() ;
                         w->setFixedHeight(option->nLines * rowHeight) ;
                         w->setLineWrapMode(QPlainTextEdit::NoWrap);
-                        valueWidget = w;
                     }
                 } else { // if the allowed values are restricted display radio buttons instead
                     QWidget *w = new QWidget();
                     QBoxLayout *wLayout = new QBoxLayout(QBoxLayout::TopToBottom);
                     QButtonGroup *buttonGroup = new QButtonGroup();
                     buttonGroup->setExclusive(true);
+                    valueWidget = w;
                     connect(buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(buttonClicked(int)));
                     
                     // go through all options and add a radio button for them
@@ -129,7 +130,6 @@ void SettingWidget::createValueWidget()
                         wLayout->addWidget(label);
                     }
                     w->setLayout(wLayout);
-                    valueWidget = w;
                 }
             }
             break;
@@ -145,13 +145,13 @@ void SettingWidget::createValueWidget()
         case G_OPTION_ARG_NONE:
             {
                 QCheckBox *w = new QCheckBox("Enabled"); // new SwitchWidget();
+                valueWidget = w;
                 connect(w, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
                 if ( argument != NULL ) {
                     w->setCheckState(Qt::Checked);
                 } else {
                     w->setCheckState(Qt::Unchecked);
                 }
-                valueWidget = w;
             }
             break;
         default:
