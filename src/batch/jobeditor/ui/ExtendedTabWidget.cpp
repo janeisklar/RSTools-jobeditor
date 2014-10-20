@@ -60,6 +60,13 @@ void ExtendedTabWidget::removePage(int index)
     setCurrentIndex(0);
 }
 
+void ExtendedTabWidget::removeAllPages()
+{
+    for ( int i=count()-1;  i>= 0; i--) {
+        removePage(i);
+    }
+}
+
 int ExtendedTabWidget::count() const
 {
     return stackWidget->count();
@@ -103,6 +110,7 @@ void ExtendedTabWidget::insertPage(int index, QWidget *page, const QIcon &icon, 
 
     // Add QPushButton
     QPushButton* button = new QPushButton(pix, label);
+    button->setStyleSheet ("text-align: left");
     button->setObjectName("__qt__passive_pushButton"); //required for interaction within Designer
     button->setCheckable(true);
     if( count()==1 )

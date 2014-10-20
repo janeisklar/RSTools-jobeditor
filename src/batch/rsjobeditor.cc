@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     JobEditorWindow widget;
     if ( argc > 1 ) {
-        widget.openJob(argv[1]);
+        widget.openJob(rsString(argv[1]));
     } else {
         widget.openJob(rsString(RSTOOLS_DATA_DIR"/rstools/jobs/empty.job"));
     }

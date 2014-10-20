@@ -50,19 +50,25 @@ bool ArgumentsModel::setData(const QModelIndex & index, const QVariant & value, 
     if (role == Qt::EditRole) {
         QString result = value.toString();
         QByteArray result2 = result.toLatin1();
-        const char *result3 = result2.data(); 
-        char *v = (char*)rsMalloc(sizeof(char)*(strlen(result3)+1));
-        sprintf(v, "%s", result3);
-        
+        char *v = rsString(result2.data());
+        bool insertedRow = false;
         vector<rsArgument*> args = job->getArguments();
         
         if ( index.row() >= (int)args.size() ) {
+            
+            //beginInsertRows(index, 0, 1);
+            
             rsArgument* arg = (rsArgument*)rsMalloc(sizeof(rsArgument));
-            arg->key = (char*)"<empty>";
-            arg->value = (char*)"";
+            arg->key = rsString("<empty>");
+            arg->value = rsString("");
             job->addArgument(arg);
+
+            insertedRow = true;
+                
+            //endInsertRows();
         }
         
+        args = job->getArguments();
         rsArgument* arg = args[index.row()];
         
         if ( index.column() == 0 ) {
@@ -70,8 +76,13 @@ bool ArgumentsModel::setData(const QModelIndex & index, const QVariant & value, 
         } else {
             arg->value = v;
         }
-        
-        emit editCompleted(result);
+                
+        if ( insertedRow ) {
+            beginResetModel();
+            endResetModel();
+        } else {
+            emit editCompleted(result);    
+        }
     }
     return true;
 }

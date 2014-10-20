@@ -33,6 +33,7 @@ protected:
     void createMenus();
     void createInsertTaskMenuItems();
     void insertTask(RSTask* task);
+    void closeCurrentJob();
     
     
     Ui::JobEditor ui;

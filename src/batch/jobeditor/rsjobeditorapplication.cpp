@@ -140,6 +140,7 @@ void JobEditorWindow::createInsertTaskMenuItems()
 
 void JobEditorWindow::newFile()
 {
+    openJob(rsString(RSTOOLS_DATA_DIR"/rstools/jobs/empty.job"));
 }
 
 void JobEditorWindow::open()
@@ -147,7 +148,7 @@ void JobEditorWindow::open()
     try {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open Job"), "", tr("Job (*.job)"));
         if ( fileName != NULL ) {
-            openJob(fileName.toUtf8().data());
+            openJob(rsString(fileName.toUtf8().data()));
         }
     } catch (const exception& e) {
     	QErrorMessage errorMessage;
@@ -162,10 +163,8 @@ void JobEditorWindow::open()
 
 void JobEditorWindow::openJob(char* jobFile)
 {
-    if (currentJobPath != NULL)
-        rsFree(currentJobPath);
+    closeCurrentJob();
     currentJobPath = jobFile;
-    
     
     RSJobParser *parser = new RSJobParser(jobFile);
     parser->parse();
@@ -187,6 +186,16 @@ void JobEditorWindow::openJob(char* jobFile)
     }
 }
 
+void JobEditorWindow::closeCurrentJob()
+{
+    ui.pipelineWidget->removeAllPages();
+    
+    if (currentJobPath != NULL)
+        rsFree(currentJobPath);
+    
+    currentJobPath = NULL;
+}
+
 void JobEditorWindow::save()
 {
     if ( currentJob == NULL ) {
@@ -202,7 +211,7 @@ void JobEditorWindow::save()
         );
         
         if ( fileName != NULL ) {
-            currentJobPath = fileName.toUtf8().data();
+            currentJobPath = rsString(fileName.toUtf8().data());
                         
             FILE *f = fopen(currentJobPath, "w");
             
@@ -235,6 +244,8 @@ void JobEditorWindow::insertNewTask(int taskIndex)
     sprintf(description, "%s", name);
     task->setDescription(description);
     insertTask(task);
+    
+    currentJob->addTask(task);
 }
 
 void JobEditorWindow::insertTask(RSTask* task)
@@ -248,8 +259,6 @@ void JobEditorWindow::insertTask(RSTask* task)
     const QString title = QString(name);
     
     ui.pipelineWidget->addPage(widget, QIcon(), title);
-    
-    currentJob->addTask(task);
 }
 
 JobEditorWindow::JobEditorWindow(QMainWindow *parent) : QMainWindow(parent)

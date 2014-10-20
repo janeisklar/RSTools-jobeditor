@@ -72,7 +72,7 @@ void SettingWidget::createValueWidget()
                         QLineEdit *w = new QLineEdit();
                         valueWidget = w;
                         w->setPlaceholderText(option->cli_arg_description);
-                        connect(w, SIGNAL(textChanged(const QString &)), this, SLOT(textChanged(const QString &)));
+                        connect(w, SIGNAL(textChanged(QString)), this, SLOT(textChanged(QString)));
                         if ( argument != NULL ) {
                             w->setText(argument->value);
                         } else if ( option->defaultValue != NULL ) {
@@ -160,11 +160,12 @@ void SettingWidget::createValueWidget()
 }
 
 // Slot for QLineEdits
-void SettingWidget::textChanged(const QString &newValue)
+void SettingWidget::textChanged(QString newValue)
 {
-    char *newValueCString = newValue.toLocal8Bit().data();
+    QByteArray ba = newValue.toLatin1();
+    const char *newValueCString = ba.data();
     rsArgument* argument = task->getArgument(option->name);
-    
+        
     char *newV = (char*)rsMalloc(sizeof(char)*(strlen(newValueCString)+1));
     sprintf(newV, "%s", newValueCString);
     
@@ -196,9 +197,10 @@ void SettingWidget::textChanged()
 void SettingWidget::buttonClicked(int id)
 {
     rsUIOptionValue** values = option->allowedValues;
-    char *value = values[id]->name;
+    const char *value = values[id]->name;
+    const QString s = QString::fromLatin1(value);
     
-    textChanged(QString::fromLocal8Bit(value));
+    textChanged(s);
 }
 
 // Slot for QCheckBox

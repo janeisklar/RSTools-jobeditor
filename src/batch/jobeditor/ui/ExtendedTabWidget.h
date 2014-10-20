@@ -54,6 +54,7 @@ public slots:
     void addPage(QWidget *page, const QIcon &icon=QIcon(), const QString &title=QString());
     void insertPage(int index, QWidget *page, const QIcon &icon=QIcon(), const QString &title=QString());
     void removePage(int index);
+    void removeAllPages();
     void setCurrentIndex(int index);
 
     void setPageTitleList(QStringList const &newTitleList);
