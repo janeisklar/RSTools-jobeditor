@@ -61,6 +61,7 @@ void SettingWidget::createValueWidget()
     switch(option->type) {
         case G_OPTION_ARG_FILENAME:
         case G_OPTION_ARG_STRING:
+        case G_OPTION_ARG_STRING_ARRAY:
         case G_OPTION_ARG_CALLBACK:
         case G_OPTION_ARG_INT:
         case G_OPTION_ARG_INT64:
