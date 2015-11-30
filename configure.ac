@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.65])
-AC_INIT([RSTools-jobeditor], [0.9.5], [andre.hoffmann@meduniwien.ac.at])
+AC_INIT([RSTools-jobeditor], [1.2.0], [andre.hoffmann@meduniwien.ac.at])
 
 ACLOCAL_AMFLAGS=-I m4
 AC_CONFIG_MACRO_DIR([m4])
@@ -54,7 +54,7 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,
 )
 
 # Check for RSTools which will already come with all the necessary dependencies
-PKG_CHECK_MODULES([RSTOOLS], [rstools >= 0.9.5])
+PKG_CHECK_MODULES([RSTOOLS], [rstools >= 1.2.0])
 AC_SUBST([RSTOOLS_CFLAGS])
 AC_SUBST([RSTOOLS_LIBS])
 LIBS=["$RSTOOLS_LIBS $LIBS"]
